@@ -39,6 +39,7 @@ export default function IdeasPage() {
   const [regenerating, setRegenerating] = useState(false);
   const [showRevisionModal, setShowRevisionModal] = useState(false);
   const [revisionNote, setRevisionNote] = useState('');
+  const [markingViral, setMarkingViral] = useState(false);
 
   useEffect(() => {
     fetchIdeas();
@@ -100,6 +101,29 @@ export default function IdeasPage() {
   const cancelEditing = () => {
     setEditedIdea(null);
     setIsEditing(false);
+  };
+
+  const markAsViral = async () => {
+    if (!selectedIdea) return;
+    setMarkingViral(true);
+    try {
+      const res = await fetch('/api/viral-references', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: selectedIdea.title,
+          transcript: selectedIdea.transcript,
+          idea_id: selectedIdea.id,
+        }),
+      });
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+      alert('Marked as viral! This transcript will be used as a reference for future generations.');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to mark as viral');
+    } finally {
+      setMarkingViral(false);
+    }
   };
 
   const saveEdits = async () => {
@@ -332,6 +356,13 @@ export default function IdeasPage() {
                       ) : (
                         <>🔄 Regenerate</>
                       )}
+                    </button>
+                    <button
+                      onClick={markAsViral}
+                      disabled={markingViral}
+                      className="px-3 py-1.5 bg-pink-600 hover:bg-pink-700 disabled:bg-gray-600 rounded-md text-sm font-medium transition-colors"
+                    >
+                      {markingViral ? '...' : '🔥 Viral'}
                     </button>
                     <button
                       onClick={startEditing}

@@ -11,7 +11,8 @@ interface GeminiOptions extends GenerationOptions {
 
 export async function generateWithGemini(
   threadData: ThreadWithComments,
-  options: GeminiOptions
+  options: GeminiOptions,
+  viralReferences?: { title: string; transcript: string }[]
 ): Promise<GeneratedContent> {
   if (!options.api_key) {
     throw new Error('Gemini API key is not configured. Please add it in Settings.');
@@ -21,7 +22,7 @@ export async function generateWithGemini(
   const model = genAI.getGenerativeModel({ model: options.model || 'gemini-2.5-flash' });
   
   const threadContent = formatThreadForPrompt(threadData);
-  const prompt = buildPrompt(threadContent, options);
+  const prompt = buildPrompt(threadContent, options, viralReferences);
 
   const result = await model.generateContent(prompt);
   const response = await result.response;

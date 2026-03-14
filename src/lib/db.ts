@@ -108,6 +108,18 @@ function initializeDb() {
       // Column already exists, ignore
     }
   }
+  
+  // Viral references table
+  database.exec(`
+    CREATE TABLE IF NOT EXISTS viral_references (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      title TEXT NOT NULL DEFAULT '',
+      transcript TEXT NOT NULL,
+      source TEXT NOT NULL DEFAULT 'manual',
+      idea_id INTEGER,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
 }
 
 export interface Settings {
@@ -235,4 +247,39 @@ export function updateGeneratedIdea(id: number, updates: Partial<Omit<GeneratedI
   );
   
   return getGeneratedIdeaById(id);
+}
+
+// Viral References
+export interface ViralReference {
+  id: number;
+  title: string;
+  transcript: string;
+  source: 'marked' | 'manual';
+  idea_id?: number;
+  created_at: string;
+}
+
+export function getViralReferences(): ViralReference[] {
+  const db = getDb();
+  return db.prepare('SELECT * FROM viral_references ORDER BY created_at DESC').all() as ViralReference[];
+}
+
+export function addViralReference(ref: { title: string; transcript: string; source: 'marked' | 'manual'; idea_id?: number }): ViralReference {
+  const db = getDb();
+  const result = db.prepare(
+    'INSERT INTO viral_references (title, transcript, source, idea_id) VALUES (?, ?, ?, ?)'
+  ).run(ref.title, ref.transcript, ref.source, ref.idea_id ?? null);
+  return db.prepare('SELECT * FROM viral_references WHERE id = ?').get(result.lastInsertRowid) as ViralReference;
+}
+
+export function deleteViralReference(id: number): boolean {
+  const db = getDb();
+  const result = db.prepare('DELETE FROM viral_references WHERE id = ?').run(id);
+  return result.changes > 0;
+}
+
+export function isIdeaMarkedViral(ideaId: number): boolean {
+  const db = getDb();
+  const row = db.prepare('SELECT id FROM viral_references WHERE idea_id = ? LIMIT 1').get(ideaId);
+  return !!row;
 }

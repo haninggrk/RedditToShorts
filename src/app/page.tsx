@@ -79,6 +79,7 @@ export default function Home() {
   const [saving, setSaving] = useState(false);
   const [showRevisionModal, setShowRevisionModal] = useState(false);
   const [revisionNote, setRevisionNote] = useState('');
+  const [markingViral, setMarkingViral] = useState(false);
 
   // Fetch settings on mount
   useEffect(() => {
@@ -298,6 +299,30 @@ export default function Home() {
   const cancelEditing = () => {
     setEditedContent(null);
     setIsEditing(false);
+  };
+
+  // Mark as viral
+  const markAsViral = async () => {
+    if (!generatedContent) return;
+    setMarkingViral(true);
+    try {
+      const res = await fetch('/api/viral-references', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: generatedContent.title,
+          transcript: generatedContent.transcript,
+          idea_id: generatedContent.id,
+        }),
+      });
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+      alert('Marked as viral! This transcript will be used as a reference for future generations.');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to mark as viral');
+    } finally {
+      setMarkingViral(false);
+    }
   };
 
   const selectSubreddit = (sub: string) => {
@@ -627,6 +652,13 @@ export default function Home() {
                       ) : (
                         <>🔄 Regenerate</>
                       )}
+                    </button>
+                    <button
+                      onClick={markAsViral}
+                      disabled={markingViral}
+                      className="px-3 py-1.5 bg-pink-600 hover:bg-pink-700 disabled:bg-gray-600 rounded-md text-sm font-medium transition-colors"
+                    >
+                      {markingViral ? '...' : '🔥 Viral'}
                     </button>
                     <button
                       onClick={startEditing}

@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { getThreadWithComments } from '@/lib/reddit';
 import { generateWithGemini } from '@/lib/gemini';
 import { generateWithCopilot } from '@/lib/copilot';
-import { getSettings, saveGeneratedIdea } from '@/lib/db';
+import { getSettings, saveGeneratedIdea, getViralReferences } from '@/lib/db';
 import { GeneratedContent } from '@/lib/prompt';
 
 export async function POST(request: Request) {
@@ -32,6 +32,9 @@ export async function POST(request: Request) {
     // Fetch thread with comments
     const threadData = await getThreadWithComments(threadId, 50);
     
+    // Fetch viral references for the prompt
+    const viralRefs = getViralReferences().map(r => ({ title: r.title, transcript: r.transcript }));
+    
     // Generate content using the selected provider
     let generatedContent: GeneratedContent;
     
@@ -40,13 +43,13 @@ export async function POST(request: Request) {
         ...baseOptions,
         api_url: settings.copilot_api_url || 'http://localhost:4141',
         model: settings.copilot_model || 'gpt-4.1',
-      });
+      }, viralRefs);
     } else {
       generatedContent = await generateWithGemini(threadData, {
         ...baseOptions,
         api_key: settings.gemini_api_key || process.env.GEMINI_API_KEY || '',
         model: settings.gemini_model || 'gemini-2.5-flash',
-      });
+      }, viralRefs);
     }
     
     // Save to database

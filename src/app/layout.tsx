@@ -42,6 +42,9 @@ export default function RootLayout({
                   <Link href="/ideas" className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
                     Saved Ideas
                   </Link>
+                  <Link href="/viral-references" className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
+                    🔥 Viral
+                  </Link>
                   <Link href="/settings" className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
                     Settings
                   </Link>

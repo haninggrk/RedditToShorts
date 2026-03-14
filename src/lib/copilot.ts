@@ -10,14 +10,15 @@ interface CopilotOptions extends GenerationOptions {
 
 export async function generateWithCopilot(
   threadData: ThreadWithComments,
-  options: CopilotOptions
+  options: CopilotOptions,
+  viralReferences?: { title: string; transcript: string }[]
 ): Promise<GeneratedContent> {
   if (!options.api_url) {
     throw new Error('Copilot API URL is not configured. Please add it in Settings.');
   }
   
   const threadContent = formatThreadForPrompt(threadData);
-  const prompt = buildPrompt(threadContent, options);
+  const prompt = buildPrompt(threadContent, options, viralReferences);
 
   const baseUrl = options.api_url.replace(/\/+$/, '');
   

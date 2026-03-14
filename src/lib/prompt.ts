@@ -62,7 +62,17 @@ ${comment.body}
   return content;
 }
 
-export function buildPrompt(threadContent: string, options: GenerationOptions): string {
+export function buildPrompt(threadContent: string, options: GenerationOptions, viralReferences?: { title: string; transcript: string }[]): string {
+  const viralSection = viralReferences && viralReferences.length > 0 ? `
+
+## VIRAL REFERENCE TRANSCRIPTS
+The following transcripts have been marked as high-performing/viral content. Study their pacing, hooks, tone, structure, and storytelling style. Use them as a STYLE REFERENCE — do NOT copy their content, but emulate what makes them engaging:
+${viralReferences.map((ref, i) => `
+### Viral Reference ${i + 1}${ref.title ? ` — "${ref.title}"` : ''}
+${ref.transcript}`).join('\n')}
+
+**Key instruction:** Analyze how these viral transcripts hook the viewer, build tension, and deliver payoffs. Apply the same techniques to the new script.` : '';
+
   return `You are a creative content writer specializing in YouTube Shorts scripts. Your task is to transform a Reddit thread into an engaging YouTube Short video script.
 
 ## Context & Settings
@@ -76,6 +86,7 @@ ${options.revision_note ? `
 **Please incorporate these changes/improvements:**
 ${options.revision_note}
 ` : ''}
+${viralSection}
 
 ## Reddit Thread Content
 ${threadContent}
