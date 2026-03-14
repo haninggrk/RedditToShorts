@@ -6,6 +6,7 @@ export interface GenerationOptions {
   tone: string;
   additional_notes: string;
   revision_note: string;
+  video_format: 'short' | 'long';
 }
 
 export interface Scene {
@@ -73,7 +74,12 @@ ${ref.transcript}`).join('\n')}
 
 **Key instruction:** Analyze how these viral transcripts hook the viewer, build tension, and deliver payoffs. Apply the same techniques to the new script.` : '';
 
-  return `You are a creative content writer specializing in YouTube Shorts scripts. Your task is to transform a Reddit thread into an engaging YouTube Short video script.
+  const isShort = options.video_format === 'short';
+  const formatLabel = isShort ? 'YouTube Short (vertical 9:16)' : 'YouTube Long-form Video (horizontal 16:9)';
+  const thumbnailResolution = isShort ? 'vertical 9:16 format (1080x1920)' : 'horizontal 16:9 format (1920x1080)';
+  const sceneCount = isShort ? '5-10' : '10-25';
+
+  return `You are a creative content writer specializing in YouTube video scripts. Your task is to transform a Reddit thread into an engaging ${formatLabel} video script.
 
 ## Context & Settings
 - **Target Duration:** ${options.duration} seconds (approximately ${Math.round(options.duration * 2.5)} words)
@@ -92,13 +98,12 @@ ${viralSection}
 ${threadContent}
 
 ## Your Task
-Create a YouTube Short script based on this Reddit thread. The script should:
+Create a ${formatLabel} script based on this Reddit thread. The script should:
 1. Hook viewers in the first 3 seconds
 2. Tell the story in a clear, engaging way according to the specified tone and target audience
 3. **CRITICAL — DEFINITIVE VOICE, NOT A FORUM RECAP:** Do NOT present this as a collection of opinions or forum comments. NEVER use phrases like "one user wrote", "commenters say", "the internet is exploding", "many argue", "some wonder", etc. Instead, SYNTHESIZE the highest-upvoted comments into confident, authoritative statements. Present the information as if YOU are the expert narrator who knows the facts. The viewer should have NO IDEA this came from a discussion forum.
 4. **Prioritize highly-upvoted comments as your primary source material** — treat top-voted insights as established facts or strong analytical takes, and weave them into a cohesive narrative. Higher upvotes = more credible content to build your script around.
-5. End with a call-to-action but avoid generic phrases like "Subscribe for more". Instead, use a CTA that fits the story and encourages engagement (e.g., "What would you do in this situation? Comment below!").
-6. NEVER mention Reddit, users, comments, threads, forums, or any social media source. Tell the story as a standalone, original piece of content — like a news briefing or documentary narration.
+5. NEVER mention Reddit, users, comments, threads, forums, or any social media source. Tell the story as a standalone, original piece of content — like a news briefing or documentary narration.
 ## Required Output Format (respond ONLY with valid JSON, no markdown code blocks):
 {
   "title": "Catchy title with hashtags (max 100 characters total including hashtags like #reddit #story)",
@@ -119,20 +124,20 @@ Create a YouTube Short script based on this Reddit thread. The script should:
   "music_style": "Comma-separated keywords describing the ideal background music mood/genre (e.g., 'Tense, Cinematic, Dark' or 'Upbeat, Electronic, Energetic'). Also suggest 1-2 specific searchable track names or artists the user can look up.",
   "pinned_comment": "A strategic comment to pin on the uploaded YouTube video for SEO and engagement. Should include relevant keywords, spark discussion, or ask a compelling question related to the content.",
   "thumbnail_prompts": [
-    "A detailed image generation prompt for a YouTube Shorts thumbnail option 1. Describe the composition, colors, subjects, text overlays, and mood. Should be eye-catching and clickable in vertical 9:16 format.",
+    "A detailed image generation prompt for a thumbnail option 1 in ${thumbnailResolution}. Describe the composition, colors, subjects, text overlays, and mood. Should be eye-catching and clickable.",
     "A different thumbnail concept as option 2. Vary the style, angle, or focus from option 1 to give creative alternatives."
   ]
 }
 
 Remember:
 - The title must be under 100 characters INCLUDING hashtags
-- Break the transcript into 5-10 scenes for visual variety
-- Make scenes practical and achievable (screenshots, text overlays, stock footage suggestions)
-- For about 30% of scenes, include an "image_prompt" field with a detailed prompt for Gemini image generation — use this for scenes that benefit from AI-generated visuals (abstract concepts, dramatic illustrations, mood imagery). The other ~70% should rely on real footage/screenshots and should NOT have an image_prompt field.
+- Break the transcript into ${sceneCount} scenes for visual variety
+- Make scenes practical and achievable (text overlays, stock footage suggestions)
+- For about 30% of scenes, include an "image_prompt" field with a detailed prompt for Gemini image generation in ${thumbnailResolution} — use this for scenes that benefit from AI-generated visuals (abstract concepts, dramatic illustrations, mood imagery). For every scene with an image_prompt, ALSO describe the scene with real footage alternatives in the "scene" field so the user can choose. The other ~70% should rely on real footage/screenshots and should NOT have an image_prompt field.
 - The image_prompt should describe the image in detail: subject, composition, colors, style, mood. Keep prompts suitable for Gemini's image generation capabilities.
 - The transcript should flow naturally for voice-over narration
 - Include dramatic pauses and emphasis for engagement
-- Generate exactly 2 thumbnail_prompts as alternative thumbnail concepts for the video`;
+- Generate exactly 2 thumbnail_prompts as alternative thumbnail concepts for the video in ${thumbnailResolution}`;
 }
 
 export function parseGeneratedResponse(text: string): GeneratedContent {

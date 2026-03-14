@@ -8,7 +8,7 @@ import { GeneratedContent } from '@/lib/prompt';
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { threadId, duration, target_audience, tone, additional_notes, revision_note } = body;
+    const { threadId, duration, target_audience, tone, additional_notes, revision_note, video_format } = body;
     
     if (!threadId) {
       return NextResponse.json(
@@ -27,6 +27,7 @@ export async function POST(request: Request) {
       tone: tone || settings.tone,
       additional_notes: additional_notes || '',
       revision_note: revision_note || '',
+      video_format: video_format || 'short',
     };
     
     // Fetch thread with comments

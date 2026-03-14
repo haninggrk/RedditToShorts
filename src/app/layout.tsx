@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Reddit to Shorts",
-  description: "Generate YouTube Shorts content ideas from Reddit threads",
+  title: "Reddit to YouTube (RTY)",
+  description: "Generate YouTube video content ideas from Reddit threads",
 };
 
 export default function RootLayout({
@@ -33,7 +33,7 @@ export default function RootLayout({
             <div className="flex items-center justify-between h-16">
               <div className="flex items-center space-x-8">
                 <Link href="/" className="text-xl font-bold text-orange-500 hover:text-orange-400">
-                  Reddit → Shorts
+                  Reddit → YouTube
                 </Link>
                 <div className="flex space-x-4">
                   <Link href="/" className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium">

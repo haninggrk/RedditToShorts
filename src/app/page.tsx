@@ -48,6 +48,7 @@ interface GenerationOptions {
   target_audience: string;
   tone: string;
   additional_notes: string;
+  video_format: 'short' | 'long';
 }
 
 export default function Home() {
@@ -71,6 +72,7 @@ export default function Home() {
     target_audience: '',
     tone: '',
     additional_notes: '',
+    video_format: 'short',
   });
   
   // Editing state for generated content
@@ -164,6 +166,7 @@ export default function Home() {
         target_audience: settings.target_audience,
         tone: settings.tone,
         additional_notes: '',
+        video_format: 'short',
       });
     }
     setShowOptionsModal(true);
@@ -187,6 +190,7 @@ export default function Home() {
           target_audience: generationOptions.target_audience,
           tone: generationOptions.tone,
           additional_notes: generationOptions.additional_notes,
+          video_format: generationOptions.video_format,
         }),
       });
       
@@ -229,6 +233,7 @@ export default function Home() {
           target_audience: generationOptions.target_audience,
           tone: generationOptions.tone,
           additional_notes: generationOptions.additional_notes,
+          video_format: generationOptions.video_format,
           revision_note: revisionNote || undefined,
         }),
       });
@@ -346,7 +351,7 @@ export default function Home() {
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold mb-2">Browse Reddit Threads</h1>
-        <p className="text-gray-400">Search for a subreddit and select threads to generate YouTube Shorts ideas</p>
+        <p className="text-gray-400">Search for a subreddit and select threads to generate YouTube video ideas</p>
       </div>
       
       {/* API Configuration Warning */}
@@ -528,6 +533,39 @@ export default function Home() {
                 <p className="text-white font-medium line-clamp-2">{selectedThreadForGeneration.title}</p>
               </div>
               
+              {/* Video Format */}
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Video Format
+                </label>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setGenerationOptions({ ...generationOptions, video_format: 'short' })}
+                    className={`p-3 rounded-lg border-2 text-left transition-colors ${
+                      generationOptions.video_format === 'short'
+                        ? 'border-orange-500 bg-orange-500/10'
+                        : 'border-gray-600 bg-gray-700/50 hover:border-gray-500'
+                    }`}
+                  >
+                    <div className="font-medium text-white text-sm">📱 Short (9:16)</div>
+                    <p className="text-xs text-gray-400 mt-1">YouTube Shorts, TikTok, Reels</p>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setGenerationOptions({ ...generationOptions, video_format: 'long' })}
+                    className={`p-3 rounded-lg border-2 text-left transition-colors ${
+                      generationOptions.video_format === 'long'
+                        ? 'border-orange-500 bg-orange-500/10'
+                        : 'border-gray-600 bg-gray-700/50 hover:border-gray-500'
+                    }`}
+                  >
+                    <div className="font-medium text-white text-sm">🖥️ Long (16:9)</div>
+                    <p className="text-xs text-gray-400 mt-1">Standard YouTube video</p>
+                  </button>
+                </div>
+              </div>
+
               {/* Duration */}
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">

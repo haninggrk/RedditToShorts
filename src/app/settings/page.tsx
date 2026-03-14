@@ -141,7 +141,7 @@ export default function SettingsPage() {
       <div>
         <h1 className="text-3xl font-bold mb-2">Master Settings</h1>
         <p className="text-gray-400">
-          Configure your preferences for AI-generated content. These settings will be used when generating YouTube Shorts ideas.
+          Configure your preferences for AI-generated content. These settings will be used when generating YouTube video ideas.
         </p>
       </div>
 
@@ -390,7 +390,7 @@ export default function SettingsPage() {
             </span>
           </div>
           <p className="text-xs text-gray-500 mt-1">
-            This determines the approximate length of the generated transcript. YouTube Shorts can be up to 60 seconds, but you can generate longer scripts for other platforms.
+            This determines the approximate length of the generated transcript.
           </p>
         </div>
 
@@ -462,7 +462,7 @@ export default function SettingsPage() {
             <span className="text-sm text-gray-400">references</span>
           </div>
           <p className="text-xs text-gray-500 mt-1">
-            Number of viral reference transcripts to include when generating new shorts. Set to 0 to disable. Most recent references are used first.
+            Number of viral reference transcripts to include when generating new videos. Set to 0 to disable. Most recent references are used first.
           </p>
         </div>
 

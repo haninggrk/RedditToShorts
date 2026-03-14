@@ -172,7 +172,7 @@ export default function ViralReferencesPage() {
           <div className="text-6xl mb-4">🔥</div>
           <h2 className="text-xl font-semibold mb-2">No viral references yet</h2>
           <p className="text-gray-400 mb-4">
-            Mark generated shorts as viral or paste transcripts of your best performing content.
+            Mark generated videos as viral or paste transcripts of your best performing content.
             These will be used as style references for future AI generations.
           </p>
         </div>

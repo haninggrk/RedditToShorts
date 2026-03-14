@@ -21,7 +21,7 @@ export function getRedditClient(): Snoowrap {
   // Recreate client if credentials changed
   if (!redditClient || lastClientId !== clientId) {
     redditClient = new Snoowrap({
-      userAgent: process.env.REDDIT_USER_AGENT || 'RedditToShorts/1.0.0',
+      userAgent: process.env.REDDIT_USER_AGENT || 'RedditToYouTube/1.0.0',
       clientId,
       clientSecret,
       username,
