@@ -100,6 +100,7 @@ export default function Home() {
   const [selectedViralRefIds, setSelectedViralRefIds] = useState<Set<number>>(new Set());
   const [maxViralRefs, setMaxViralRefs] = useState(10);
   const [loadingViralRefs, setLoadingViralRefs] = useState(false);
+  const [viralRefsError, setViralRefsError] = useState<string | null>(null);
 
   // Persist key state to sessionStorage
   const persistState = useCallback(() => {
@@ -201,6 +202,7 @@ export default function Home() {
   // Fetch viral references for the picker
   const fetchViralRefs = async () => {
     setLoadingViralRefs(true);
+    setViralRefsError(null);
     try {
       const [refsRes, settingsRes] = await Promise.all([
         fetch('/api/viral-references'),
@@ -208,9 +210,12 @@ export default function Home() {
       ]);
       const refsData = await refsRes.json();
       const settingsData = await settingsRes.json();
+      if (refsData.error) throw new Error(refsData.error);
       setAvailableViralRefs(refsData.references || []);
       setMaxViralRefs(settingsData.max_viral_references ?? 10);
-    } catch { /* ignore */ }
+    } catch (err) {
+      setViralRefsError(err instanceof Error ? err.message : 'Failed to load viral references');
+    }
     setLoadingViralRefs(false);
   };
 
@@ -703,44 +708,46 @@ export default function Home() {
               </div>
               
               {/* Viral Reference Picker */}
-              {availableViralRefs.length > 0 && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
-                    🔥 Viral References <span className="text-gray-500">(optional, max {maxViralRefs})</span>
-                  </label>
-                  {loadingViralRefs ? (
-                    <p className="text-sm text-gray-500">Loading...</p>
-                  ) : (
-                    <div className="max-h-48 overflow-y-auto space-y-1 bg-gray-700/30 rounded-lg p-2">
-                      {availableViralRefs.map((ref) => (
-                        <label
-                          key={ref.id}
-                          className={`flex items-start gap-2 p-2 rounded cursor-pointer transition-colors ${
-                            selectedViralRefIds.has(ref.id)
-                              ? 'bg-pink-900/30 border border-pink-600/40'
-                              : 'hover:bg-gray-700/50 border border-transparent'
-                          } ${!selectedViralRefIds.has(ref.id) && selectedViralRefIds.size >= maxViralRefs ? 'opacity-40 cursor-not-allowed' : ''}`}
-                        >
-                          <input
-                            type="checkbox"
-                            checked={selectedViralRefIds.has(ref.id)}
-                            onChange={() => toggleViralRef(ref.id)}
-                            disabled={!selectedViralRefIds.has(ref.id) && selectedViralRefIds.size >= maxViralRefs}
-                            className="mt-0.5 accent-pink-500"
-                          />
-                          <div className="min-w-0">
-                            <p className="text-sm text-white truncate">{ref.title}</p>
-                            <p className="text-xs text-gray-400 line-clamp-1">{ref.transcript.slice(0, 100)}...</p>
-                          </div>
-                        </label>
-                      ))}
-                    </div>
-                  )}
-                  {selectedViralRefIds.size > 0 && (
-                    <p className="text-xs text-pink-400 mt-1">{selectedViralRefIds.size}/{maxViralRefs} selected</p>
-                  )}
-                </div>
-              )}
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  🔥 Viral References <span className="text-gray-500">(optional{availableViralRefs.length > 0 ? `, max ${maxViralRefs}` : ''})</span>
+                </label>
+                {loadingViralRefs ? (
+                  <p className="text-sm text-gray-500">Loading viral references...</p>
+                ) : viralRefsError ? (
+                  <p className="text-sm text-red-400">⚠️ {viralRefsError}</p>
+                ) : availableViralRefs.length === 0 ? (
+                  <p className="text-sm text-gray-500">No viral references saved yet. Add them from the <a href="/viral-references" className="text-pink-400 underline">🔥 Viral</a> page.</p>
+                ) : (
+                  <div className="max-h-48 overflow-y-auto space-y-1 bg-gray-700/30 rounded-lg p-2">
+                    {availableViralRefs.map((ref) => (
+                      <label
+                        key={ref.id}
+                        className={`flex items-start gap-2 p-2 rounded cursor-pointer transition-colors ${
+                          selectedViralRefIds.has(ref.id)
+                            ? 'bg-pink-900/30 border border-pink-600/40'
+                            : 'hover:bg-gray-700/50 border border-transparent'
+                        } ${!selectedViralRefIds.has(ref.id) && selectedViralRefIds.size >= maxViralRefs ? 'opacity-40 cursor-not-allowed' : ''}`}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={selectedViralRefIds.has(ref.id)}
+                          onChange={() => toggleViralRef(ref.id)}
+                          disabled={!selectedViralRefIds.has(ref.id) && selectedViralRefIds.size >= maxViralRefs}
+                          className="mt-0.5 accent-pink-500"
+                        />
+                        <div className="min-w-0">
+                          <p className="text-sm text-white truncate">{ref.title}</p>
+                          <p className="text-xs text-gray-400 line-clamp-1">{ref.transcript.slice(0, 100)}...</p>
+                        </div>
+                      </label>
+                    ))}
+                  </div>
+                )}
+                {selectedViralRefIds.size > 0 && (
+                  <p className="text-xs text-pink-400 mt-1">{selectedViralRefIds.size}/{maxViralRefs} selected</p>
+                )}
+              </div>
 
               {/* API Key Warning */}
               {settings && (settings.ai_provider || 'gemini') === 'gemini' && !settings.gemini_api_key && (
