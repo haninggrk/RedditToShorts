@@ -95,6 +95,12 @@ export default function Home() {
   const [revisionNote, setRevisionNote] = useState('');
   const [markingViral, setMarkingViral] = useState(false);
 
+  // Viral reference picker state
+  const [availableViralRefs, setAvailableViralRefs] = useState<{ id: number; title: string; transcript: string }[]>([]);
+  const [selectedViralRefIds, setSelectedViralRefIds] = useState<Set<number>>(new Set());
+  const [maxViralRefs, setMaxViralRefs] = useState(10);
+  const [loadingViralRefs, setLoadingViralRefs] = useState(false);
+
   // Persist key state to sessionStorage
   const persistState = useCallback(() => {
     try {
@@ -188,9 +194,27 @@ export default function Home() {
     }
   };
 
+  // Fetch viral references for the picker
+  const fetchViralRefs = async () => {
+    setLoadingViralRefs(true);
+    try {
+      const [refsRes, settingsRes] = await Promise.all([
+        fetch('/api/viral-references'),
+        fetch('/api/settings'),
+      ]);
+      const refsData = await refsRes.json();
+      const settingsData = await settingsRes.json();
+      setAvailableViralRefs(refsData.references || []);
+      setMaxViralRefs(settingsData.max_viral_references ?? 10);
+    } catch { /* ignore */ }
+    setLoadingViralRefs(false);
+  };
+
   // Open generation options modal
   const openGenerationModal = (thread: RedditThread) => {
     setSelectedThreadForGeneration(thread);
+    setSelectedViralRefIds(new Set());
+    fetchViralRefs();
     // Reset options to defaults from settings
     if (settings) {
       setGenerationOptions({
@@ -202,6 +226,18 @@ export default function Home() {
       });
     }
     setShowOptionsModal(true);
+  };
+
+  const toggleViralRef = (id: number) => {
+    setSelectedViralRefIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else if (next.size < maxViralRefs) {
+        next.add(id);
+      }
+      return next;
+    });
   };
 
   // Generate content for a thread with options
@@ -223,6 +259,7 @@ export default function Home() {
           tone: generationOptions.tone,
           additional_notes: generationOptions.additional_notes,
           video_format: generationOptions.video_format,
+          viral_reference_ids: selectedViralRefIds.size > 0 ? [...selectedViralRefIds] : undefined,
         }),
       });
       
@@ -661,6 +698,46 @@ export default function Home() {
                 />
               </div>
               
+              {/* Viral Reference Picker */}
+              {availableViralRefs.length > 0 && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    🔥 Viral References <span className="text-gray-500">(optional, max {maxViralRefs})</span>
+                  </label>
+                  {loadingViralRefs ? (
+                    <p className="text-sm text-gray-500">Loading...</p>
+                  ) : (
+                    <div className="max-h-48 overflow-y-auto space-y-1 bg-gray-700/30 rounded-lg p-2">
+                      {availableViralRefs.map((ref) => (
+                        <label
+                          key={ref.id}
+                          className={`flex items-start gap-2 p-2 rounded cursor-pointer transition-colors ${
+                            selectedViralRefIds.has(ref.id)
+                              ? 'bg-pink-900/30 border border-pink-600/40'
+                              : 'hover:bg-gray-700/50 border border-transparent'
+                          } ${!selectedViralRefIds.has(ref.id) && selectedViralRefIds.size >= maxViralRefs ? 'opacity-40 cursor-not-allowed' : ''}`}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={selectedViralRefIds.has(ref.id)}
+                            onChange={() => toggleViralRef(ref.id)}
+                            disabled={!selectedViralRefIds.has(ref.id) && selectedViralRefIds.size >= maxViralRefs}
+                            className="mt-0.5 accent-pink-500"
+                          />
+                          <div className="min-w-0">
+                            <p className="text-sm text-white truncate">{ref.title}</p>
+                            <p className="text-xs text-gray-400 line-clamp-1">{ref.transcript.slice(0, 100)}...</p>
+                          </div>
+                        </label>
+                      ))}
+                    </div>
+                  )}
+                  {selectedViralRefIds.size > 0 && (
+                    <p className="text-xs text-pink-400 mt-1">{selectedViralRefIds.size}/{maxViralRefs} selected</p>
+                  )}
+                </div>
+              )}
+
               {/* API Key Warning */}
               {settings && (settings.ai_provider || 'gemini') === 'gemini' && !settings.gemini_api_key && (
                 <div className="bg-yellow-900/30 border border-yellow-600 rounded-lg p-3 text-yellow-200 text-sm">

@@ -8,7 +8,7 @@ import { GeneratedContent } from '@/lib/prompt';
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { threadId, duration, target_audience, tone, additional_notes, revision_note, video_format } = body;
+    const { threadId, duration, target_audience, tone, additional_notes, revision_note, video_format, viral_reference_ids } = body;
     
     if (!threadId) {
       return NextResponse.json(
@@ -33,9 +33,19 @@ export async function POST(request: Request) {
     // Fetch thread with comments
     const threadData = await getThreadWithComments(threadId, 50);
     
-    // Fetch viral references for the prompt (limited by setting)
+    // Fetch viral references — use selected IDs if provided, otherwise none
     const maxRefs = settings.max_viral_references ?? 10;
-    const viralRefs = getViralReferences().slice(0, maxRefs).map(r => ({ title: r.title, transcript: r.transcript }));
+    const allViralRefs = getViralReferences();
+    let viralRefs: { title: string; transcript: string }[];
+    if (Array.isArray(viral_reference_ids) && viral_reference_ids.length > 0) {
+      const idSet = new Set(viral_reference_ids.map(Number));
+      viralRefs = allViralRefs
+        .filter(r => idSet.has(r.id))
+        .slice(0, maxRefs)
+        .map(r => ({ title: r.title, transcript: r.transcript }));
+    } else {
+      viralRefs = [];
+    }
     
     // Generate content using the selected provider
     let generatedContent: GeneratedContent;
