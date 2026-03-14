@@ -50,6 +50,7 @@ function initializeDb() {
     { name: 'ai_provider', default: 'gemini' },
     { name: 'copilot_api_url', default: 'http://localhost:4141' },
     { name: 'copilot_model', default: 'gpt-4.1' },
+    { name: 'max_viral_references', default: '10' },
   ];
   for (const col of providerColumns) {
     try {
@@ -137,6 +138,7 @@ export interface Settings {
   reddit_client_secret: string;
   reddit_username: string;
   reddit_password: string;
+  max_viral_references: number;
 }
 
 export interface GeneratedIdea {
@@ -173,7 +175,7 @@ export function updateSettings(settings: Partial<Settings>): Settings {
   
   db.prepare(`
     UPDATE settings 
-    SET preferred_duration = ?, target_audience = ?, tone = ?, additional_preferences = ?, ai_provider = ?, gemini_api_key = ?, gemini_model = ?, copilot_api_url = ?, copilot_model = ?, reddit_client_id = ?, reddit_client_secret = ?, reddit_username = ?, reddit_password = ?, updated_at = CURRENT_TIMESTAMP
+    SET preferred_duration = ?, target_audience = ?, tone = ?, additional_preferences = ?, ai_provider = ?, gemini_api_key = ?, gemini_model = ?, copilot_api_url = ?, copilot_model = ?, reddit_client_id = ?, reddit_client_secret = ?, reddit_username = ?, reddit_password = ?, max_viral_references = ?, updated_at = CURRENT_TIMESTAMP
     WHERE id = 1
   `).run(
     updated.preferred_duration, 
@@ -188,7 +190,8 @@ export function updateSettings(settings: Partial<Settings>): Settings {
     updated.reddit_client_id || '',
     updated.reddit_client_secret || '',
     updated.reddit_username || '',
-    updated.reddit_password || ''
+    updated.reddit_password || '',
+    updated.max_viral_references ?? 10
   );
   
   return getSettings();

@@ -32,8 +32,9 @@ export async function POST(request: Request) {
     // Fetch thread with comments
     const threadData = await getThreadWithComments(threadId, 50);
     
-    // Fetch viral references for the prompt
-    const viralRefs = getViralReferences().map(r => ({ title: r.title, transcript: r.transcript }));
+    // Fetch viral references for the prompt (limited by setting)
+    const maxRefs = settings.max_viral_references ?? 10;
+    const viralRefs = getViralReferences().slice(0, maxRefs).map(r => ({ title: r.title, transcript: r.transcript }));
     
     // Generate content using the selected provider
     let generatedContent: GeneratedContent;

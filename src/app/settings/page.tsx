@@ -17,6 +17,7 @@ interface Settings {
   reddit_client_secret: string;
   reddit_username: string;
   reddit_password: string;
+  max_viral_references: number;
 }
 
 export default function SettingsPage() {
@@ -441,6 +442,27 @@ export default function SettingsPage() {
           />
           <p className="text-xs text-gray-500 mt-1">
             Additional context or rules for content generation (e.g., "avoid profanity", "include a call-to-action", "focus on drama").
+          </p>
+        </div>
+
+        {/* Max Viral References */}
+        <div>
+          <label className="block text-sm font-medium text-gray-300 mb-2">
+            🔥 Max Viral References in Prompt
+          </label>
+          <div className="flex items-center gap-4">
+            <input
+              type="number"
+              min={0}
+              max={50}
+              value={settings.max_viral_references ?? 10}
+              onChange={(e) => updateSetting('max_viral_references', parseInt(e.target.value) || 0)}
+              className="w-24 px-3 py-2 rounded-md bg-gray-700 border border-gray-600 text-white focus:ring-orange-500 focus:border-orange-500"
+            />
+            <span className="text-sm text-gray-400">references</span>
+          </div>
+          <p className="text-xs text-gray-500 mt-1">
+            Number of viral reference transcripts to include when generating new shorts. Set to 0 to disable. Most recent references are used first.
           </p>
         </div>
 
