@@ -20,7 +20,7 @@ export async function GET(
   } catch (error) {
     console.error('Error fetching thread:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch thread details' },
+      { error: error instanceof Error ? error.message : 'Failed to fetch thread details' },
       { status: 500 }
     );
   }

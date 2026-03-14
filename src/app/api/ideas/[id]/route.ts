@@ -33,7 +33,7 @@ export async function GET(
   } catch (error) {
     console.error('Error fetching idea:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch idea' },
+      { error: error instanceof Error ? error.message : 'Failed to fetch idea' },
       { status: 500 }
     );
   }
@@ -67,7 +67,7 @@ export async function DELETE(
   } catch (error) {
     console.error('Error deleting idea:', error);
     return NextResponse.json(
-      { error: 'Failed to delete idea' },
+      { error: error instanceof Error ? error.message : 'Failed to delete idea' },
       { status: 500 }
     );
   }
@@ -117,7 +117,7 @@ export async function PUT(
   } catch (error) {
     console.error('Error updating idea:', error);
     return NextResponse.json(
-      { error: 'Failed to update idea' },
+      { error: error instanceof Error ? error.message : 'Failed to update idea' },
       { status: 500 }
     );
   }

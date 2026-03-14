@@ -42,7 +42,7 @@ export async function GET() {
   } catch (error) {
     console.error('Error fetching models:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch models' },
+      { error: error instanceof Error ? error.message : 'Failed to fetch models' },
       { status: 500 }
     );
   }

@@ -18,7 +18,7 @@ export async function GET(request: Request) {
   } catch (error) {
     console.error('Error searching subreddits:', error);
     return NextResponse.json(
-      { error: 'Failed to search subreddits' },
+      { error: error instanceof Error ? error.message : 'Failed to search subreddits' },
       { status: 500 }
     );
   }

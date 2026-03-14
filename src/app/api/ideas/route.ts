@@ -19,7 +19,7 @@ export async function GET(request: Request) {
   } catch (error) {
     console.error('Error fetching ideas:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch ideas' },
+      { error: error instanceof Error ? error.message : 'Failed to fetch ideas' },
       { status: 500 }
     );
   }

@@ -31,7 +31,7 @@ export async function GET(request: Request) {
   } catch (error) {
     console.error('Error fetching threads:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch threads from subreddit' },
+      { error: error instanceof Error ? error.message : 'Failed to fetch threads from subreddit' },
       { status: 500 }
     );
   }

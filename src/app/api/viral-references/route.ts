@@ -7,7 +7,7 @@ export async function GET() {
     return NextResponse.json({ references: refs });
   } catch (error) {
     console.error('Error fetching viral references:', error);
-    return NextResponse.json({ error: 'Failed to fetch viral references' }, { status: 500 });
+    return NextResponse.json({ error: error instanceof Error ? error.message : 'Failed to fetch viral references' }, { status: 500 });
   }
 }
 
@@ -43,7 +43,7 @@ export async function POST(request: Request) {
     return NextResponse.json(ref);
   } catch (error) {
     console.error('Error adding viral reference:', error);
-    return NextResponse.json({ error: 'Failed to add viral reference' }, { status: 500 });
+    return NextResponse.json({ error: error instanceof Error ? error.message : 'Failed to add viral reference' }, { status: 500 });
   }
 }
 
@@ -64,6 +64,6 @@ export async function DELETE(request: Request) {
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Error deleting viral reference:', error);
-    return NextResponse.json({ error: 'Failed to delete viral reference' }, { status: 500 });
+    return NextResponse.json({ error: error instanceof Error ? error.message : 'Failed to delete viral reference' }, { status: 500 });
   }
 }

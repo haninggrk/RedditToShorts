@@ -153,9 +153,13 @@ export default function Home() {
       try {
         const res = await fetch(`/api/reddit/search?q=${encodeURIComponent(searchQuery)}`);
         const data = await res.json();
+        if (data.error) {
+          setError(data.error);
+          return;
+        }
         setSubredditSuggestions(data.subreddits || []);
       } catch (err) {
-        console.error('Failed to search subreddits:', err);
+        setError(err instanceof Error ? err.message : 'Failed to search subreddits');
       }
     };
     
