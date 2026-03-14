@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 interface RedditThread {
   id: string;
@@ -51,23 +51,35 @@ interface GenerationOptions {
   video_format: 'short' | 'long';
 }
 
+const STORAGE_KEY = 'rty_browse_state';
+
+function loadPersistedState() {
+  try {
+    const raw = sessionStorage.getItem(STORAGE_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch { /* ignore */ }
+  return null;
+}
+
 export default function Home() {
-  const [subreddit, setSubreddit] = useState('');
-  const [searchQuery, setSearchQuery] = useState('');
+  const saved = typeof window !== 'undefined' ? loadPersistedState() : null;
+
+  const [subreddit, setSubreddit] = useState(saved?.subreddit ?? '');
+  const [searchQuery, setSearchQuery] = useState(saved?.searchQuery ?? '');
   const [subredditSuggestions, setSubredditSuggestions] = useState<string[]>([]);
-  const [threads, setThreads] = useState<RedditThread[]>([]);
+  const [threads, setThreads] = useState<RedditThread[]>(saved?.threads ?? []);
   const [loading, setLoading] = useState(false);
   const [generating, setGenerating] = useState<string | null>(null);
-  const [generatedContent, setGeneratedContent] = useState<GeneratedContent | null>(null);
-  const [sortBy, setSortBy] = useState<'hot' | 'top'>('hot');
-  const [timeframe, setTimeframe] = useState<'day' | 'week' | 'month' | 'year' | 'all'>('day');
+  const [generatedContent, setGeneratedContent] = useState<GeneratedContent | null>(saved?.generatedContent ?? null);
+  const [sortBy, setSortBy] = useState<'hot' | 'top'>(saved?.sortBy ?? 'hot');
+  const [timeframe, setTimeframe] = useState<'day' | 'week' | 'month' | 'year' | 'all'>(saved?.timeframe ?? 'day');
   const [error, setError] = useState<string | null>(null);
   
   // Generation options modal state
   const [settings, setSettings] = useState<Settings | null>(null);
   const [showOptionsModal, setShowOptionsModal] = useState(false);
   const [selectedThreadForGeneration, setSelectedThreadForGeneration] = useState<RedditThread | null>(null);
-  const [generationOptions, setGenerationOptions] = useState<GenerationOptions>({
+  const [generationOptions, setGenerationOptions] = useState<GenerationOptions>(saved?.generationOptions ?? {
     duration: 60,
     target_audience: '',
     tone: '',
@@ -83,6 +95,23 @@ export default function Home() {
   const [revisionNote, setRevisionNote] = useState('');
   const [markingViral, setMarkingViral] = useState(false);
 
+  // Persist key state to sessionStorage
+  const persistState = useCallback(() => {
+    try {
+      sessionStorage.setItem(STORAGE_KEY, JSON.stringify({
+        subreddit,
+        searchQuery,
+        threads,
+        generatedContent,
+        sortBy,
+        timeframe,
+        generationOptions,
+      }));
+    } catch { /* quota exceeded — ignore */ }
+  }, [subreddit, searchQuery, threads, generatedContent, sortBy, timeframe, generationOptions]);
+
+  useEffect(() => { persistState(); }, [persistState]);
+
   // Fetch settings on mount
   useEffect(() => {
     const fetchSettings = async () => {
@@ -90,13 +119,16 @@ export default function Home() {
         const res = await fetch('/api/settings');
         const data = await res.json();
         setSettings(data);
-        // Initialize generation options with settings defaults
-        setGenerationOptions({
-          duration: data.preferred_duration,
-          target_audience: data.target_audience,
-          tone: data.tone,
-          additional_notes: '',
-        });
+        // Only initialize generation options with settings defaults when no persisted state
+        if (!saved) {
+          setGenerationOptions({
+            duration: data.preferred_duration,
+            target_audience: data.target_audience,
+            tone: data.tone,
+            additional_notes: '',
+            video_format: 'short',
+          });
+        }
       } catch (err) {
         console.error('Failed to fetch settings:', err);
       }
@@ -738,7 +770,7 @@ export default function Home() {
             <div className="p-6 space-y-6">
               {/* Title */}
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-1">Title (with hashtags)</label>
+                <label className="block text-sm font-medium text-gray-300 mb-1">Title</label>
                 {isEditing && editedContent ? (
                   <input
                     type="text"

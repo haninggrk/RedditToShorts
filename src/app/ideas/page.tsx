@@ -405,7 +405,7 @@ export default function IdeasPage() {
               {/* Title */}
               <div>
                 <div className="flex items-center justify-between mb-1">
-                  <label className="block text-sm font-medium text-gray-300">Title (with hashtags)</label>
+                  <label className="block text-sm font-medium text-gray-300">Title</label>
                   <button
                     onClick={() => copyToClipboard(isEditing && editedIdea ? editedIdea.title : selectedIdea.title, 'Title')}
                     className="text-xs text-blue-400 hover:text-blue-300"

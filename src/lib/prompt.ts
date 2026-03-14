@@ -79,6 +79,10 @@ ${ref.transcript}`).join('\n')}
   const thumbnailResolution = isShort ? 'vertical 9:16 format (1080x1920)' : 'horizontal 16:9 format (1920x1080)';
   const sceneCount = isShort ? '5-10' : '10-25';
 
+  const titleInstruction = isShort
+    ? '"title": "Catchy title with hashtags (max 100 characters total including hashtags like #reddit #story)",'
+    : '"title": "Catchy, descriptive title WITHOUT hashtags (max 100 characters). Long-form YouTube titles should be clean and professional — no hashtags.",';
+
   return `You are a creative content writer specializing in YouTube video scripts. Your task is to transform a Reddit thread into an engaging ${formatLabel} video script.
 
 ## Context & Settings
@@ -106,7 +110,7 @@ Create a ${formatLabel} script based on this Reddit thread. The script should:
 5. NEVER mention Reddit, users, comments, threads, forums, or any social media source. Tell the story as a standalone, original piece of content — like a news briefing or documentary narration.
 ## Required Output Format (respond ONLY with valid JSON, no markdown code blocks):
 {
-  "title": "Catchy title with hashtags (max 100 characters total including hashtags like #reddit #story)",
+  ${titleInstruction}
   "description": "YouTube description with relevant hashtags and keywords (2-3 sentences)",
   "transcript": "The complete narration script ready for text-to-speech (ElevenLabs). Use natural pauses with '...' and emphasis with CAPS for dramatic effect. This should be ${options.duration} seconds when read aloud.",
   "scenes": [
@@ -130,7 +134,7 @@ Create a ${formatLabel} script based on this Reddit thread. The script should:
 }
 
 Remember:
-- The title must be under 100 characters INCLUDING hashtags
+- The title must be under 100 characters${isShort ? ' INCLUDING hashtags' : ' and must NOT contain hashtags'}
 - Break the transcript into ${sceneCount} scenes for visual variety
 - Make scenes practical and achievable (text overlays, stock footage suggestions)
 - For about 30% of scenes, include an "image_prompt" field with a detailed prompt for Gemini image generation in ${thumbnailResolution} — use this for scenes that benefit from AI-generated visuals (abstract concepts, dramatic illustrations, mood imagery). For every scene with an image_prompt, ALSO describe the scene with real footage alternatives in the "scene" field so the user can choose. The other ~70% should rely on real footage/screenshots and should NOT have an image_prompt field.
